@@ -14,11 +14,7 @@ type RatelimitConfig struct {
 	ErrorMessage string
 }
 
-//? ratelimiters
-
-
-
-
+//? ratelimiter
 type ratelimit struct{
 	global FixedWindowCounter
 	perIp TokenBucket
