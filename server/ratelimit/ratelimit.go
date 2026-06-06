@@ -9,15 +9,15 @@ import (
 
 
 type RatelimitConfig struct {
-	Global       FixedWindowCounterConfig
-	PerIp        TokenBucketConfig
+	Global       FixedWindowCounterConfig // Global refers to the entire server application, if max requests in a minute second exceeds it will serve 429 to everyone and every endpoint.
+	Local        TokenBucketConfig	// Local refers to per session ratelimiting, based on IP and uses token bucket algorithm
 	ErrorMessage string
 }
 
 //? ratelimiter
 type ratelimit struct{
 	global FixedWindowCounter
-	perIp TokenBucket
+	local TokenBucket
 	errorMsg string
 }
 
@@ -30,15 +30,15 @@ func Init(config RatelimitConfig) {
 	// checks for invalid config data
 	if config.Global.MaxRequests == 0 {
 		logger.Fatal("Max requests cannot be 0 !", "ratelimit error", "global")
-	} else if config.PerIp.MaxTokens == 0 {
+	} else if config.Local.MaxTokens == 0 {
 		logger.Fatal("Max tokens cannot be 0 !", "ratelimit error", "per ip")
-	} else if config.PerIp.RefillRate == 0 {
+	} else if config.Local.RefillRate == 0 {
 		logger.Fatal("Refill rate cannot be 0 !", "ratelimit error", "per ip")
 	} else if strings.TrimSpace(config.ErrorMessage) == "" {
 		logger.Warn("Error message as receivied in config is empty space! Will fall back to the default message", "ratelimit error", "ErrorMessage value")
 	}
 	ratelimiter.global.Config=config.Global
-	ratelimiter.perIp.Config=config.PerIp
+	ratelimiter.local.Config=config.Local
 	ratelimiter.errorMsg=config.ErrorMessage
 }
 
