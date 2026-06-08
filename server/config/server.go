@@ -4,12 +4,14 @@ import (
 	"go-backend/server/ratelimit"
 )
 
-type ServerConfig struct {
+type ServerConfig[Dependency any] struct {
 	Host string
 	Port uint16
 
 	LogRequests bool
 	Ratelimiter   ratelimit.RatelimitConfig
+
+	Dependency any
 }
 
 // Uses the default value for some fields
