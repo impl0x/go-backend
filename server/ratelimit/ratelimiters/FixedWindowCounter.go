@@ -1,4 +1,4 @@
-package ratelimit
+package ratelimiters
 
 type FixedWindowCounterConfig struct { 
 	MaxRequests uint16 // per sec

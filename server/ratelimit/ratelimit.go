@@ -2,25 +2,31 @@ package ratelimit
 
 import (
 	"go-backend/modules/logger"
+	"go-backend/server/core/types"
+	"go-backend/server/ratelimit/ratelimiters"
 	"strings"
 )
 
+type Ratelimiter interface{
+	allow()servertypes.Middleware
+}
+
+
 //? configs
-
-
-type RatelimitConfig struct { // in future i plan to make the global and local be of a type interface of ratelimiter, which will then allow multiple types of ratelimiting to be present
-	Global       FixedWindowCounterConfig // Global refers to the entire server application, if max requests in a minute second exceeds it will serve 429 to everyone and every endpoint.
-	Local        TokenBucketConfig	// Local refers to per session ratelimiting, based on IP and uses token bucket algorithm
+type RatelimitConfig struct {
+	Global       ratelimiters.FixedWindowCounterConfig // Global refers to the entire server application, if max requests in a minute second exceeds it will serve 429 to everyone and every endpoint.
+	Local        ratelimiters.TokenBucketConfig	// Local refers to per session ratelimiting, based on IP and uses token bucket algorithm
 	ErrorMessage string
 }
 
-//? ratelimiter
+
+
+//? main ratelimiter
 type ratelimit struct{
-	global FixedWindowCounter
-	local TokenBucket
+	global ratelimiters.FixedWindowCounter
+	local ratelimiters.TokenBucket
 	errorMsg string
 }
-
 
 
 //? main functions
