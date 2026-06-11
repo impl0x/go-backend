@@ -1,6 +1,9 @@
 package ratelimiters
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
 
 type TokenBucketConfig struct {
 	MaxTokens  uint8
@@ -17,4 +20,8 @@ type UserIp struct {
 	ip       string
 	tokens   uint8
 	lastSeen time.Time
+}
+
+func (rl TokenBucket) Allow(next http.Handler) http.Handler {
+	return next
 }

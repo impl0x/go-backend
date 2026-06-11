@@ -1,14 +1,11 @@
 package ratelimit
 
 import (
-	"go-backend/modules/logger"
-	"go-backend/server/core/types"
-	"go-backend/server/ratelimit/ratelimiters"
-	"strings"
+	"net/http"
 )
 
 type Ratelimiter interface{
-	allow()servertypes.Middleware
+	Allow(next http.Handler)http.Handler
 }
 
 
@@ -32,7 +29,7 @@ type ratelimit struct{
 //? main functions
 var ratelimiter ratelimit
 
-func Init  [G any, L any] (config RatelimitConfig[G, L]) {
+// func Init  [G any, L any] (config RatelimitConfig[G, L]) {
 	// checks for invalid config data
 	// if config.Global.MaxRequests == 0 {
 	// 	logger.Fatal("Max requests cannot be 0 !", "ratelimit error", "global")
@@ -46,5 +43,8 @@ func Init  [G any, L any] (config RatelimitConfig[G, L]) {
 	// ratelimiter.global.Config=config.Global
 	// ratelimiter.local.Config=config.Local
 	// ratelimiter.errorMsg=config.ErrorMessage
-}
+// }
 
+func Init[T Ratelimiter](){
+	
+}
