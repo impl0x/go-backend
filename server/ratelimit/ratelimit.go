@@ -2,6 +2,7 @@ package ratelimit
 
 import (
 	"go-backend/server/core/core_types"
+	"go-backend/server/core/helper"
 	"go-backend/server/ratelimit/ratelimiters"
 	"net/http"
 )
@@ -21,11 +22,13 @@ func (r *Ratelimit) NewRatelimiter(rl ratelimiters.Ratelimiter) core_types.Middl
 		}
 		r.StatusCode = 429
 	}
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	return helper.Middleware(
+		func(next http.Handler, w http.ResponseWriter, r *http.Request){
 			if !rl.Allow(r){
 				// TODO: return a 429 and ErrorMessage in proper format
 			}
-		})
-	}
+			next.ServeHTTP(w,r)
+		},
+	)
 }
