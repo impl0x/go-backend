@@ -8,12 +8,13 @@ import (
 )
 
 type Ratelimit struct {
-	StatusCode   int    // default to 429
+	StatusCode   uint16    // default to 429
 	ErrorMessage string // default to "Too many requests!"
 }
 
 // returns a middleware which implements the ratelimiter
 func (r *Ratelimit) NewRatelimiter(rl ratelimiters.Ratelimiter) core_types.Middleware {
+	// validation logic
 	if r.ErrorMessage == "" {
 		r.ErrorMessage = "Too many requests!"
 	} else if r.StatusCode == 0 {
@@ -23,7 +24,7 @@ func (r *Ratelimit) NewRatelimiter(rl ratelimiters.Ratelimiter) core_types.Middl
 		r.StatusCode = 429
 	}
 
-	return helper.Middleware(
+	return helper.NewMiddleware(
 		func(next http.Handler, w http.ResponseWriter, r *http.Request){
 			if !rl.Allow(r){
 				// TODO: return a 429 and ErrorMessage in proper format
