@@ -1,7 +1,7 @@
 package router
 
 import (
-	mo "github.com/impl0x/go-backend"
+	"github.com/impl0x/mo"
 )
 
 type Route struct {
