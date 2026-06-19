@@ -1,4 +1,4 @@
-module go-backend
+module github.com/impl0x/go-backend
 
 go 1.26.2
 
