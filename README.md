@@ -1,5 +1,3 @@
-A backend server template which is reuseable
+# Mo - api framework
 
-~~still under development~~
-
-Thinking about re-doing the entire thing in echo style..
+A backend server template which is made on top of net/http and is lightweight
