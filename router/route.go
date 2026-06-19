@@ -9,7 +9,7 @@ type Route struct {
 	Path        string
 	Name        string
 	Handler     mo.HandlerFunc
-	PreMiddlewares []mo.MiddlewareFunc
+	PreMiddlewares []mo.HandlerFunc
 }
 
 type Routes []Route

@@ -1,9 +1,9 @@
 package mo
 
 
-type MiddlewareFunc func(next HandlerFunc) HandlerFunc
+// type MiddlewareFunc func(next HandlerFunc) HandlerFunc
 
-type HandlerFunc func(c *Context) error
+type HandlerFunc func(c *Context) *HttpError
 
 type Mo struct{
 
