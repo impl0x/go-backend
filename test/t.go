@@ -1,14 +1,11 @@
 package main
 
-import "net/http"
+import "github.com/impl0x/mo"
 
-type Receiver struct{
-
-}
-func (rec *Receiver)ServeHTTP(w http.ResponseWriter, r *http.Request){
-	
-}
+// import "github.com/labstack/echo/v5"
 
 func main() {
-	http.ListenAndServe(":8080",nil)
+	n:=mo.New()
+	n.GET("/",func(c *mo.Context) error {println("Root test");return nil})
+	n.Start(":8080")
 }
