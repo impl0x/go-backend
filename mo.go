@@ -11,12 +11,11 @@ type Mo struct {
 
 func New() *Mo {
 	return &Mo{
-		router: &Router{},
+		router:           &Router{},
+		HTTPErrorHandler: DefaultHTTPErrorHandler(false),
 	}
 }
-func (m *Mo) GET(path string, handler HandlerFunc) {
-	m.router.Routes = append(m.router.Routes, Route{path, http.MethodGet, handler})
-}
+
 func (m *Mo) Start(addr string) error {
 	return http.ListenAndServe(":8080", m)
 }
@@ -36,27 +35,23 @@ func (m *Mo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	route.Handler(newContext)
 }
 
-type Route struct {
-	Path    string
-	Method  string
-	Handler HandlerFunc
+func (m *Mo) GET(path string, handler HandlerFunc, mi ...Middleware) {
+	m.router.Routes = append(m.router.Routes, Route{path, http.MethodGet, handler, mi}, )
 }
-type Router struct {
-	Routes []Route
+func (m *Mo) POST(path string, handler HandlerFunc, mi ...Middleware) {
+	m.router.Routes = append(m.router.Routes, Route{path, http.MethodPost, handler, mi})
 }
-
-var emptyRoute = Route{}
-
-func (r *Router) Route(path string, method string) (Route, HttpError) {
-	for _, v := range r.Routes {
-		if path == v.Path {
-			if method == v.Method {
-				return v, nil
-			}
-			return emptyRoute, ErrMethodNotAllowed
-		}
-	}
-	return emptyRoute, ErrNotFound
+func (m *Mo) PATCH(path string, handler HandlerFunc, mi ...Middleware) {
+	m.router.Routes = append(m.router.Routes, Route{path, http.MethodPatch, handler, mi})
+}
+func (m *Mo) PUT(path string, handler HandlerFunc, mi ...Middleware) {
+	m.router.Routes = append(m.router.Routes, Route{path, http.MethodPut, handler, mi})
+}
+func (m *Mo) OPTIONS(path string, handler HandlerFunc, mi ...Middleware) {
+	m.router.Routes = append(m.router.Routes, Route{path, http.MethodOptions, handler, mi})
+}
+func (m *Mo) DELETE(path string, handler HandlerFunc, mi ...Middleware) {
+	m.router.Routes = append(m.router.Routes, Route{path, http.MethodDelete, handler, mi})
 }
 
 type HandlerFunc func(c *Context) error

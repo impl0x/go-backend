@@ -5,16 +5,17 @@ import (
 	"net/http"
 )
 
-type HttpError interface{
-	StatusCode()int
-	StatusText()string
+type HttpError interface {
+	StatusCode() int
+	StatusText() string
 	error
 }
 
 // used to store the common errors
 type httpError struct {
-	code int
+	Code int
 }
+
 var (
 	ErrBadRequest                  = &httpError{http.StatusBadRequest}            // 400
 	ErrUnauthorized                = &httpError{http.StatusUnauthorized}          // 401
@@ -29,12 +30,20 @@ var (
 	ErrBadGateway                  = &httpError{http.StatusBadGateway}            // 502
 	ErrServiceUnavailable          = &httpError{http.StatusServiceUnavailable}    // 503
 )
+
 func (he httpError) StatusCode() int {
-	return he.code
+	return he.Code
 }
-func (he httpError) StatusText()string{
-	return http.StatusText(he.code) // does not include status code
+func (he httpError) StatusText() string {
+	return http.StatusText(he.Code) // does not include status code
 }
 func (he httpError) Error() string {
-	return fmt.Sprintf("code=%d, message=%v", he.code, he.StatusText())
+	return fmt.Sprintf("code=%d, message=%v", he.Code, he.StatusText())
+}
+func (he httpError) JsonFormat() any {
+	return struct {
+		Message string `json:"message"`
+	}{
+		Message: he.StatusText(),
+	}
 }
