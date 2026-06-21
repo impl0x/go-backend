@@ -5,10 +5,36 @@ import (
 	"net/http"
 )
 
-type HttpError interface {
+type HttpErrorInterface interface {
 	StatusCode() int
-	StatusText() string
+	JsonFormat() any
 	error
+}
+
+func NewHTTPError(code int, message string) HttpErrorInterface {
+	return &HttpError{
+		Code:    code,
+		Message: message,
+	}
+}
+
+// error occurred during request lifecycle
+type HttpError struct {
+	Code    int
+	Message string
+}
+
+func (h *HttpError) StatusCode() int {
+	return h.Code
+}
+func (h *HttpError) JsonFormat() any {
+	return map[string]any{
+		"code":    h.Code,
+		"message": h.Message,
+	}
+}
+func (h *HttpError) Error() string {
+	return fmt.Sprintf("code=%d, message=%v", h.Code, h.Message)
 }
 
 // used to store the common errors

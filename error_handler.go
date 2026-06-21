@@ -10,8 +10,8 @@ func DefaultHTTPErrorHandler(exposeError bool) HTTPErrorHandler {
 			return
 		}
 		switch e := err.(type) {
-		case httpError:
-			c.JSON(e.Code, e.JsonFormat())
+		case HttpErrorInterface:
+			c.JSON(e.StatusCode(), e.JsonFormat())
 		default:
 			resp := map[string]any{
 				"message": http.StatusText(http.StatusInternalServerError),

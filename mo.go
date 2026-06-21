@@ -3,6 +3,8 @@ package mo
 import (
 	"net/http"
 )
+type HandlerFunc func(c *Context) error
+type Middleware func(HandlerFunc) HandlerFunc
 
 type Mo struct {
 	router           *Router
@@ -11,7 +13,7 @@ type Mo struct {
 
 func New() *Mo {
 	return &Mo{
-		router:           &Router{},
+		router:           NewDefaultRouter(),
 		HTTPErrorHandler: DefaultHTTPErrorHandler(false),
 	}
 }
@@ -54,5 +56,6 @@ func (m *Mo) DELETE(path string, handler HandlerFunc, mi ...Middleware) {
 	m.router.Routes = append(m.router.Routes, Route{path, http.MethodDelete, handler, mi})
 }
 
-type HandlerFunc func(c *Context) error
-type Middleware func(HandlerFunc) HandlerFunc
+
+
+

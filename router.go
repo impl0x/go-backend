@@ -10,9 +10,13 @@ type Router struct {
 	Routes []Route
 }
 
+func NewDefaultRouter()*Router{
+	return &Router{}
+}
+
 var emptyRoute = Route{}
 
-func (r *Router) Route(path string, method string) (Route, HttpError) {
+func (r *Router) Route(path string, method string) (Route, HttpErrorInterface) {
 	for _, v := range r.Routes {
 		if path == v.Path {
 			if method == v.Method {

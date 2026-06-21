@@ -30,38 +30,38 @@ func (c *Context) writeContentType(value string) {
 }
 
 // Redirect redirects the request to a provided URL with status code.
-func (c *Context) Redirect(code int, url string)  {
+func (c *Context) Redirect(code int, url string) error {
 	if code < 300 || code > 308 {
-		c.Mo.HTTPErrorHandler(c,ErrInternalServerError)
-		return
+		return ErrInternalServerError
 	}
 	c.response.Header().Set(HeaderLocation, url)
 	c.response.WriteHeader(code)
-	
+	return nil
 }
 
 // NoContent sends a response with no body and a status code.
-func (c *Context) NoContent(code int) {
+func (c *Context) NoContent(code int) error{
 	c.response.WriteHeader(code)
+	return nil
 }
 
 // Blob sends a blob response with status code and content type.
-func (c *Context) Blob(code int, contentType string, b []byte) {
+func (c *Context) Blob(code int, contentType string, b []byte) error{
 	c.writeContentType(contentType)
 	c.response.WriteHeader(code)
 	writeResp(c.response, b)
+	return nil
 }
 
 // JSON sends a JSON response with status code.
-func (c *Context) JSON(code int, target any) {
-	v,err:=json.Marshal(target)
-	if err != nil {
-		c.Mo.HTTPErrorHandler(c,ErrInternalServerError)
-		return 
-	}
+func (c *Context) JSON(code int, target any) error{
 	c.writeContentType(MIMEApplicationJSON)
 	c.response.WriteHeader(code)
-	writeResp(c.response,v)
+	return json.NewEncoder(c.response).Encode(target)
+}
+
+func (c *Context) TEXT(code int, body string)error{
+	return c.Blob(code, MIMETextPlain, []byte(body))
 }
 
 func writeResp(resp http.ResponseWriter,b []byte){
