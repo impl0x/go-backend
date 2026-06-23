@@ -8,9 +8,9 @@ type HandlerFunc func(c *Context) error
 type Middleware func(HandlerFunc) HandlerFunc
 
 type Mo struct {
-	router           Router
+	router           Router	// root router, can contain more Routers
 	HTTPErrorHandler HTTPErrorHandler // Error handler must also handle nil, because every handler return is at the end handed over to the errorHandler even if its a nil
-	Middlewares      []Middleware
+	Middlewares 	[]Middleware
 }
 
 func New() *Mo {
@@ -39,40 +39,42 @@ func (m *Mo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, mi := range m.Middlewares {
 		h = mi(h)
 	}
-	print(len(route.Middlewares))
 	for _, mi := range route.Middlewares {
 		h = mi(h)
 	}
 	m.HTTPErrorHandler(c, h(c))
 }
 
-func (m *Mo) GET(path string, handler HandlerFunc, mi ...Middleware) *Route {
-	r := &Route{path, http.MethodGet, handler, mi}
+func (m *Mo) add(path string, method string, handler HandlerFunc, mi []Middleware) *Route{
+	r:=&Route{path, method, handler, mi}
 	m.router.Add(r)
 	return r
+}
+
+func (m *Mo) GET(path string, handler HandlerFunc, mi ...Middleware) *Route {
+	return m.add(path, http.MethodGet, handler, mi)
 }
 func (m *Mo) POST(path string, handler HandlerFunc, mi ...Middleware) *Route {
-	r := &Route{path, http.MethodPost, handler, mi}
-	m.router.Add(r)
-	return r
+	return m.add(path, http.MethodPost, handler, mi)
 }
 func (m *Mo) PATCH(path string, handler HandlerFunc, mi ...Middleware) *Route {
-	r := &Route{path, http.MethodPatch, handler, mi}
-	m.router.Add(r)
-	return r
+	return m.add(path, http.MethodPatch, handler, mi)
 }
 func (m *Mo) PUT(path string, handler HandlerFunc, mi ...Middleware) *Route {
-	r := &Route{path, http.MethodPut, handler, mi}
-	m.router.Add(r)
-	return r
+	return m.add(path, http.MethodPut, handler, mi)
 }
 func (m *Mo) OPTIONS(path string, handler HandlerFunc, mi ...Middleware) *Route {
-	r := &Route{path, http.MethodOptions, handler, mi}
-	m.router.Add(r)
-	return r
+	return m.add(path, http.MethodOptions, handler, mi)
 }
 func (m *Mo) DELETE(path string, handler HandlerFunc, mi ...Middleware) *Route {
-	r := &Route{path, http.MethodDelete, handler, mi}
-	m.router.Add(r)
-	return r
+	return m.add(path, http.MethodDelete, handler, mi)
+}
+func (m *Mo) HEAD(path string, handler HandlerFunc, mi ...Middleware) *Route {
+	return m.add(path, http.MethodHead, handler, mi)
+}
+
+func (m *Mo) Group(prefix string) *Group{
+	return &Group{
+		prefix: prefix,
+	}
 }
