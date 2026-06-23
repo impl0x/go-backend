@@ -9,7 +9,7 @@ import (
 
 func main() {
 	m:=mo.New()
-	users:=mo.NewGroup("/users")
+	users:=m.NewGroup("/users")
 	users.Use(logUsers)
 	users.GET("/1",func(c *mo.Context) error {
 		logger.Mo("Test")
