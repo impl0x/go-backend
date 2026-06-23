@@ -3,26 +3,42 @@ package mo
 import (
 	"net/http"
 
-	// "github.com/impl0x/mo/modules/logger"
+	"github.com/impl0x/mo/modules/logger"
 )
 
 type HandlerFunc func(c *Context) error
 type Middleware func(HandlerFunc) HandlerFunc
 
 type Mo struct {
-	router           Router	// root router
+	router           Router           // root router
 	HTTPErrorHandler HTTPErrorHandler // Error handler must also handle nil, because every handler return is at the end handed over to the errorHandler even if its a nil
-	Middlewares 	[]Middleware
+	Middlewares      []Middleware
+	Config           *MoConfig
+}
+
+type MoConfig struct {
+	printStartMsg bool
+	logErrors     bool
+}
+
+func DefaultConfig() *MoConfig {
+	return &MoConfig{
+		true, true,
+	}
 }
 
 func New() *Mo {
 	return &Mo{
 		router:           NewSlowRouter(),
 		HTTPErrorHandler: DefaultHTTPErrorHandler(false),
+		Config:           DefaultConfig(),
 	}
 }
 
 func (m *Mo) Start(addr string) error {
+	if m.Config.printStartMsg{
+		logger.Mo("Started Mo HTTP Server.")
+	}
 	return http.ListenAndServe(":8080", m)
 }
 
@@ -47,11 +63,8 @@ func (m *Mo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	m.HTTPErrorHandler(c, h(c))
 }
 
-func (m *Mo) add(path string, method string, handler HandlerFunc, mi []Middleware) *Route{
-	r:=&Route{path, method, handler, mi}
-	if m==nil{
-		println("REALLY NGA")
-	}
+func (m *Mo) add(path string, method string, handler HandlerFunc, mi []Middleware) *Route {
+	r := &Route{path, method, handler, mi}
 	m.router.Add(r)
 	return r
 }
@@ -79,10 +92,10 @@ func (m *Mo) HEAD(path string, handler HandlerFunc, mi ...Middleware) *Route {
 }
 
 // Add middlewares using "Use" before registering paths
-func (m *Mo) NewGroup(prefix string, mi ...Middleware) *Group{
+func (m *Mo) NewGroup(prefix string, mi ...Middleware) *Group {
 	return &Group{
-		prefix: prefix,
+		prefix:      prefix,
 		Middlewares: mi,
-		m: m,
+		m:           m,
 	}
 }

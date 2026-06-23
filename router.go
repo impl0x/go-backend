@@ -16,7 +16,6 @@ type Route struct {
 // o(n)
 type BasicRouter struct {
 	Routes      []*Route
-	Middlewares []Middleware
 }
 
 func NewSlowRouter() *BasicRouter {

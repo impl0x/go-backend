@@ -74,7 +74,7 @@ func (c *Context) TEXT(code int, body string)error{
 func writeResp(resp http.ResponseWriter,b []byte){
 	_, err := resp.Write(b)
 	if err != nil {
-		logger.Error("Client disconnected! couldn't write response")
+		logger.Mo("Client disconnected! couldn't write response")
 		return 
 	}
 }

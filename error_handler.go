@@ -2,7 +2,6 @@ package mo
 
 import (
 	"net/http"
-
 	"github.com/impl0x/mo/modules/logger"
 )
 
@@ -19,7 +18,7 @@ func DefaultHTTPErrorHandler(exposeError bool) HTTPErrorHandler {
 			return
 		}
 		if c.response.committed{
-			logger.Error("Cannot return error, response already committed!","err",err.Error())
+			logger.Mo("Cannot write error, response already sent!","err",err.Error())
 			return
 		}
 		switch e := err.(type) {
