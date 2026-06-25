@@ -2,6 +2,7 @@ package mo
 
 import (
 	"net/http"
+
 	"github.com/impl0x/mo/modules/logger"
 )
 
@@ -15,11 +16,11 @@ type HTTPErrorHandler func(*Context, error)
 // Then return a valid json from JsonFormat() method and a valid status-code from StatusCode()
 func DefaultHTTPErrorHandler(exposeError bool) HTTPErrorHandler {
 	return func(c *Context, err error) {
-		if err==nil{
+		if err == nil {
 			return
 		}
-		if c.response.committed{
-			logger.Mo("Cannot write error, response already sent!","err",err.Error())
+		if c.response.committed {
+			logger.Mo("Cannot write error, response already sent!", "err", err.Error())
 			return
 		}
 		switch e := err.(type) {
@@ -29,8 +30,8 @@ func DefaultHTTPErrorHandler(exposeError bool) HTTPErrorHandler {
 			resp := map[string]any{
 				"message": http.StatusText(http.StatusInternalServerError),
 			}
-			if exposeError{
-				resp["error"]=e.Error()
+			if exposeError {
+				resp["error"] = e.Error()
 			}
 			c.JSON(http.StatusInternalServerError, resp)
 		}

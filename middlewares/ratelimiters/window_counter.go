@@ -34,11 +34,11 @@ func (wc *windowCounter) Allow(*http.Request) bool {
 	wc.mu.Lock()
 	defer wc.mu.Unlock()
 
-	if time.Since(wc.windowStart)>= wc.Config.windowSize{
-		wc.reqCount=0
-		wc.windowStart=time.Now()
+	if time.Since(wc.windowStart) >= wc.Config.windowSize {
+		wc.reqCount = 0
+		wc.windowStart = time.Now()
 	}
-	if wc.reqCount<wc.Config.limit{
+	if wc.reqCount < wc.Config.limit {
 		wc.reqCount++
 		return true
 	}

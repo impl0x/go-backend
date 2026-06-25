@@ -6,5 +6,5 @@ var mo = Level{
 }
 
 func Mo(v ...string) {
-	log(mo,v)
+	log(mo, v)
 }

@@ -32,12 +32,12 @@ type user struct {
 // IP based ratelimiting
 // logic for getting ip is in tb.Config.GetIp, change the func to your own if you face issues
 func NewTokenBucket(maxCapacity, refillRate uint16) *tokenBucket {
-	tb:=tokenBucket{
+	tb := tokenBucket{
 		Config: tokenBucketConfig{
-			maxCapacity: maxCapacity,
-			rate:        refillRate,
-			GetIp:       DefaultGetIp(true),
-			IpStickDuration: 500,
+			maxCapacity:           maxCapacity,
+			rate:                  refillRate,
+			GetIp:                 DefaultGetIp(true),
+			IpStickDuration:       500,
 			IpCleanerTickDuration: 100,
 		},
 	}
@@ -56,7 +56,7 @@ func (tb *tokenBucket) Allow(r *http.Request) bool {
 	return true
 }
 
-func (tb *tokenBucket) addNewBucket(ip string){
+func (tb *tokenBucket) addNewBucket(ip string) {
 	tb.mu.Lock()
 	defer tb.mu.Unlock()
 	tb.buckets = append(tb.buckets, &user{
@@ -86,12 +86,11 @@ func (tb *tokenBucket) findBucket(ip string) (bool, bool) {
 }
 func (tb *tokenBucket) refill(u *user) {
 	now := time.Now()
-	elapsed := uint16(now.Sub(u.lastRefillAt).Seconds()) // trust me nobody's visiting the api after ~45 days
+	elapsed := uint16(now.Sub(u.lastRefillAt).Seconds())                   // trust me nobody's visiting the api after ~45 days
 	u.tokens = min(tb.Config.maxCapacity, u.tokens+elapsed*tb.Config.rate) // even if they do, it caps out at the 16 bit limit.
 	u.lastRefillAt = now
 	u.lastSeenAt = now
 }
-
 
 func (tb *tokenBucket) cleanupRunner() {
 	ticker := time.NewTicker(time.Duration(tb.Config.IpCleanerTickDuration) * time.Second)
@@ -102,11 +101,11 @@ func (tb *tokenBucket) cleanupRunner() {
 		for i, b := range tb.buckets {
 			idle := time.Since(b.lastSeenAt)
 			if idle > (time.Duration(tb.Config.IpStickDuration) * time.Second) {
-				newBuckets=append(tb.buckets[:i], tb.buckets[i+1:]... )	
+				newBuckets = append(tb.buckets[:i], tb.buckets[i+1:]...)
 			}
 		}
-		if newBuckets!=nil{
-			tb.buckets=newBuckets
+		if newBuckets != nil {
+			tb.buckets = newBuckets
 		}
 		tb.mu.Unlock()
 	}

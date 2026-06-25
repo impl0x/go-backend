@@ -3,14 +3,13 @@ package mo
 import "net/http"
 
 type Group struct {
-	prefix string
+	prefix      string
 	Middlewares []Middleware
-	m      *Mo
+	m           *Mo
 }
 
-
 func (g *Group) add(path string, method string, handler HandlerFunc, mi []Middleware) *Route {
-	return g.m.add(g.prefix+path,method,handler, append(g.Middlewares,mi...))
+	return g.m.add(g.prefix+path, method, handler, append(g.Middlewares, mi...))
 }
 
 func (g *Group) GET(path string, handler HandlerFunc, mi ...Middleware) *Route {

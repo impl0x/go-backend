@@ -12,10 +12,9 @@ type Route struct {
 	Middlewares []Middleware // returns a copy of slice, don't mutate
 }
 
-
 // o(n)
 type BasicRouter struct {
-	Routes      []*Route
+	Routes []*Route
 }
 
 func NewSlowRouter() *BasicRouter {
@@ -36,8 +35,6 @@ func (r *BasicRouter) Find(path string, method string) (*Route, HttpErrorInterfa
 	}
 	return nil, ErrNotFound
 }
-
-
 
 // type RadixRouter struct {
 // 	root *node
@@ -113,5 +110,3 @@ func (r *BasicRouter) Find(path string, method string) (*Route, HttpErrorInterfa
 // 		}
 // 	}
 // }
-
-

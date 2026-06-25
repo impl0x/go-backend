@@ -64,15 +64,15 @@ var fatal = Level{
 
 // ? extra helper funcs
 
-func log(lvl Level , v []string){
-	if len(v)==0{
-		_loggerError("Not enough values passed in logger",false)
+func log(lvl Level, v []string) {
+	if len(v) == 0 {
+		_loggerError("Not enough values passed in logger", false)
 		return
 	}
 	msg := v[0]
-	var kwargs []string =nil
+	var kwargs []string = nil
 	if len(v) > 1 {
-		kwargs=v[1:]
+		kwargs = v[1:]
 	}
 	println(lvl.makeLogMessage(msg, kwargs))
 }
@@ -87,7 +87,6 @@ func _loggerError(msg string, fatal bool) {
 		os.Exit(1)
 	}
 }
-
 
 // ? Logging internals
 
@@ -112,7 +111,7 @@ func colorLabel(c color, s *string) {
 func (lvl Level) makeLogMessage(message string, args []string) string {
 	nowTime := time.Now()
 	timeString := nowTime.Format("03:04:05 PM")
-	colorText(Colors["grey"],&timeString)
+	colorText(Colors["grey"], &timeString)
 
 	// ? Logic for having a evenly spaced background
 	t := 9 - len(lvl.Label)
@@ -121,12 +120,11 @@ func (lvl Level) makeLogMessage(message string, args []string) string {
 	lbStr := strings.Repeat(" ", l) + lvl.Label + strings.Repeat(" ", r)
 
 	colorLabel(lvl.Color, &lbStr)
-	
+
 	finalString := fmt.Sprintf("%v %v %v %v %v",
 		timeString, dot, lbStr, arrow, message,
 	)
 
-	
 	if len(args) != 0 {
 		var toAddBuilder strings.Builder
 		toAddBuilder.Write([]byte(" " + dot))
@@ -149,26 +147,26 @@ func (lvl Level) makeLogMessage(message string, args []string) string {
 	return finalString
 }
 
-//? Func definitions for levels
+// ? Func definitions for levels
 func Info(v ...string) {
-	log(info,v)
+	log(info, v)
 }
 func Warn(v ...string) {
-	log(warn,v)
+	log(warn, v)
 }
 func Success(v ...string) {
-	log(success,v)
+	log(success, v)
 }
 func Error(v ...string) {
-	log(error_,v)
+	log(error_, v)
 }
 func Fatal(v ...string) {
-	log(fatal,v)
+	log(fatal, v)
 	os.Exit(1)
 }
 
-func Custom(lvl Level, v ...string){
-	log(lvl,v)
+func Custom(lvl Level, v ...string) {
+	log(lvl, v)
 }
 
 // * usage guide:

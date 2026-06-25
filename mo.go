@@ -36,7 +36,7 @@ func New() *Mo {
 }
 
 func (m *Mo) Start(addr string) error {
-	if m.Config.printStartMsg{
+	if m.Config.printStartMsg {
 		logger.Mo("Started Mo HTTP Server.")
 	}
 	return http.ListenAndServe(":8080", m)

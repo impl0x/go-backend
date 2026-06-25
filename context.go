@@ -3,17 +3,18 @@ package mo
 import (
 	"encoding/json"
 	"net/http"
+
 	"github.com/impl0x/mo/modules/logger"
 )
 
-type Response struct{
+type Response struct {
 	http.ResponseWriter
 	committed bool
 }
 
-func (r *Response)WriteHeader(statusCode int){
+func (r *Response) WriteHeader(statusCode int) {
 	r.ResponseWriter.WriteHeader(statusCode)
-	r.committed=true
+	r.committed = true
 }
 
 type Context struct {
@@ -29,10 +30,10 @@ func (c *Context) writeContentType(value string) {
 	}
 }
 
-func (c *Context) Request()*http.Request{
+func (c *Context) Request() *http.Request {
 	return c.request
 }
-func (c *Context) Response()http.ResponseWriter{
+func (c *Context) Response() http.ResponseWriter {
 	return c.response
 }
 
@@ -47,13 +48,13 @@ func (c *Context) Redirect(code int, url string) error {
 }
 
 // NoContent sends a response with no body and a status code.
-func (c *Context) NoContent(code int) error{
+func (c *Context) NoContent(code int) error {
 	c.response.WriteHeader(code)
 	return nil
 }
 
 // Blob sends a blob response with status code and content type.
-func (c *Context) Blob(code int, contentType string, b []byte) error{
+func (c *Context) Blob(code int, contentType string, b []byte) error {
 	c.writeContentType(contentType)
 	c.response.WriteHeader(code)
 	writeResp(c.response, b)
@@ -61,20 +62,20 @@ func (c *Context) Blob(code int, contentType string, b []byte) error{
 }
 
 // JSON sends a JSON response with status code.
-func (c *Context) JSON(code int, target any) error{
+func (c *Context) JSON(code int, target any) error {
 	c.writeContentType(MIMEApplicationJSON)
 	c.response.WriteHeader(code)
 	return json.NewEncoder(c.response).Encode(target)
 }
 
-func (c *Context) TEXT(code int, body string)error{
+func (c *Context) TEXT(code int, body string) error {
 	return c.Blob(code, MIMETextPlain, []byte(body))
 }
 
-func writeResp(resp http.ResponseWriter,b []byte){
+func writeResp(resp http.ResponseWriter, b []byte) {
 	_, err := resp.Write(b)
 	if err != nil {
 		logger.Mo("Client disconnected! couldn't write response")
-		return 
+		return
 	}
 }
