@@ -7,53 +7,40 @@ import (
 )
 
 type windowCounterConfig struct {
-	maxRequests uint16 // per second
-
+	limit      int
+	windowSize time.Duration
 }
 
 type windowCounter struct {
-	reqCount uint16
-	gapTime  time.Time
-	config   windowCounterConfig
-	mu       sync.RWMutex
+	reqCount    int
+	windowStart time.Time
+	Config      windowCounterConfig
+	mu          sync.RWMutex
 }
 
 // Non-IP based
 // Fixed value per second, anything over is rejected.
-func NewWindowCounter(maxRequests uint16) *windowCounter {
+func NewWindowCounter(maxRequests int, per time.Duration) *windowCounter {
 	return &windowCounter{
-		config: windowCounterConfig{
-			maxRequests: maxRequests,
+		Config: windowCounterConfig{
+			limit:      maxRequests,
+			windowSize: per,
 		},
+		windowStart: time.Now(),
 	}
 }
 
-func (wc *windowCounter) Allow(_ *http.Request) bool {
-	if !wc.checkTimeGap() {
-		wc.mu.Lock()
+func (wc *windowCounter) Allow(*http.Request) bool {
+	wc.mu.Lock()
+	defer wc.mu.Unlock()
+
+	if time.Since(wc.windowStart)>= wc.Config.windowSize{
+		wc.reqCount=0
+		wc.windowStart=time.Now()
+	}
+	if wc.reqCount<wc.Config.limit{
 		wc.reqCount++
-		wc.mu.Unlock()
-		wc.mu.RLock()
-		defer wc.mu.RUnlock()
-		if wc.reqCount > wc.config.maxRequests {
-			return false
-		} else {
-			return true
-		}
-	} else{
-		wc.mu.Lock()
-		defer wc.mu.Unlock()
-		wc.gapTime=time.Now()
 		return true
 	}
-
-
-}
-
-// returns if 1 second has passed or not since the reqCount reset.
-func (wc *windowCounter) checkTimeGap()bool{
-	now := time.Now()
-	wc.mu.RLock()
-	defer wc.mu.RUnlock()
-	return now.Sub(wc.gapTime) >= time.Second
+	return false
 }

@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-
+// Do not mutate after starting server
 type tokenBucketConfig struct {
 	maxCapacity           uint16
 	rate                  uint16 // per sec
-	GetIp                 GetIp  // Logic to get Ips from requests. if using a proxy service then put your own logic in this function. Do not mutate after starting
+	GetIp                 GetIp  // Logic to get Ips from requests. if using a proxy service then put your own logic in this function.
 	IpStickDuration       uint16 // seconds, cleans the idle ips above this threshold
 	IpCleanerTickDuration uint16 // seconds, checks every T amount of seconds to remove the idle ips
 }
