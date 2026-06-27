@@ -36,16 +36,20 @@ var ErrInvalidStruct = errors.New("Invalid struct")
 
 func Validate(v any) error {
 	rv := reflect.ValueOf(v)
-	if rv.Kind() == reflect.Ptr {
+	if rv.Kind() == reflect.Pointer {
 		rv = rv.Elem()
 	}
 	rt := reflect.TypeOf(v)
 	if rt.Kind() != reflect.Struct {
 		return ErrInvalidStruct
 	}
+	println(rv.NumField())
 	for i := 0; i < rv.NumField(); i++ {
 		v := rv.Field(i)
 		t := rt.Field(i)
+		if !t.IsExported() {
+			continue
+		}
 		tag, ok := t.Tag.Lookup(validatorTag)
 		if !ok {
 			continue
@@ -74,6 +78,8 @@ func Validate(v any) error {
 				if !urlRx.MatchString(v.String()) {
 					return ErrValidation
 				}
+			case "required":
+				continue
 			default:
 				cons := strings.Split(r, "=")
 				if len(cons) != 2 {
@@ -83,26 +89,39 @@ func Validate(v any) error {
 				cods := cons[1]
 				switch rule {
 				case "min":
-					if !slices.Contains(NumTypes, kind) {
-						return ErrTypeError
-					}
-					x, err := strconv.ParseFloat(cods, 64)
+					min, err := strconv.ParseFloat(cods, 64)
 					if err != nil {
 						return ErrTypeError
 					}
-					if v.Interface().(float64) < x {
-						return ErrValidation
+					if kind == reflect.String {
+						val := len(v.String())
+						if val < int(min) {
+							return ErrValidation
+						}
+					} else if slices.Contains(NumTypes, kind) {
+						if v.Convert(reflect.TypeFor[float64]()).Float() < min {
+							println("DDDD")
+							return ErrValidation
+						}
+					} else {
+						return ErrTypeError
 					}
 				case "max":
-					if !slices.Contains(NumTypes, kind) {
-						return ErrTypeError
-					}
-					x, err := strconv.ParseFloat(cods, 64)
+					max, err := strconv.ParseFloat(cods, 64)
 					if err != nil {
 						return ErrTypeError
 					}
-					if v.Interface().(float64) > x {
-						return ErrValidation
+					if kind == reflect.String {
+						val := len(v.String())
+						if val > int(max) {
+							return ErrValidation
+						}
+					} else if slices.Contains(NumTypes, kind) {
+						if v.Convert(reflect.TypeFor[float64]()).Float() > max {
+							return ErrValidation
+						}
+					} else {
+						return ErrTypeError
 					}
 				case "oneof":
 					got := fmt.Sprintf("%v", v.Interface())
@@ -110,6 +129,8 @@ func Validate(v any) error {
 					if !slices.Contains(allowed, got) {
 						return ErrValidation
 					}
+				default:
+					return errors.New("idk")
 				}
 			}
 		}
