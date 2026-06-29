@@ -20,11 +20,11 @@ type windowCounter struct {
 
 // Non-IP based
 // Fixed value per second, anything over is rejected.
-func NewWindowCounter(maxRequests int, per time.Duration) *windowCounter {
+func NewWindowCounter(maxRequests int, duration time.Duration) *windowCounter {
 	return &windowCounter{
 		Config: windowCounterConfig{
 			limit:      maxRequests,
-			windowSize: per,
+			windowSize: duration,
 		},
 		windowStart: time.Now(),
 	}
