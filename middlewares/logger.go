@@ -11,7 +11,7 @@ import (
 func Logger(next mo.HandlerFunc) mo.HandlerFunc {
 	return func(c *mo.Context) error {
 		req := c.Request()
-		v := fmt.Sprintf("%v -> %v", req.RemoteAddr, req.URL.Path)
+		v := fmt.Sprintf(`%v -> "%v"`, req.RemoteAddr, req.URL.Path)
 		switch req.Method {
 		case http.MethodGet:
 			logger.Get(v)
