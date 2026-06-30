@@ -31,8 +31,8 @@ var urlRx = regexp.MustCompile(`^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::
 
 // Validates structs using the standard validation tags
 //
-// examples: 
-// 
+// examples:
+//
 // `validate:"required"`
 //
 // `validate:"required,email"`
@@ -40,9 +40,9 @@ var urlRx = regexp.MustCompile(`^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::
 // `validate:"required,min=3,max=10"`
 func Validate(target any) []ValidationError {
 	var errs []ValidationError
-	rv := reflect.ValueOf(target) // stores the value
-	rt := reflect.TypeOf(target)  // stores the type
-	if rv.Kind() == reflect.Ptr { // if v is a pointer then we dereference it
+	rv := reflect.ValueOf(target)     // stores the value
+	rt := reflect.TypeOf(target)      // stores the type
+	if rv.Kind() == reflect.Pointer { // if v is a pointer then we dereference it
 		rv = rv.Elem()
 		rt = rt.Elem()
 	}
@@ -54,7 +54,7 @@ func Validate(target any) []ValidationError {
 		v := rv.Field(i) // value
 		t := rt.Field(i) // type
 		kind := v.Kind() // storing the type, will be used a lot below
-		if kind == reflect.Ptr {
+		if kind == reflect.Pointer {
 			v = v.Elem()
 		}
 		if kind == reflect.Struct { // recursively validates any nested structs
@@ -125,7 +125,7 @@ func validateRule(s string, v reflect.Value, t reflect.StructField, kind reflect
 		cods := cons[1] // 2
 		switch rule {
 		case "min":
-			min, err := strconv.ParseFloat(cods, 64)	// every number is convertible to float64
+			min, err := strconv.ParseFloat(cods, 64) // every number is convertible to float64
 			if err != nil {
 				return newUserError("min condition must be convertible to float64")
 			}
