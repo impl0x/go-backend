@@ -9,6 +9,6 @@ func (r *Route) Use(mi ...Middleware) {
 }
 
 // Make sure to add middlewares first then add the method handlers
-func (g *Group) Use(mi ...Middleware) {
+func (g *Grouped) Use(mi ...Middleware) {
 	g.Middlewares = append(g.Middlewares, mi...)
 }
