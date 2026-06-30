@@ -39,16 +39,16 @@ import (
 func main() {
 	m := mo.New()
 	// m.Use() takes a parameter of type mo.MiddlewareFunc
-	m.Use(middlewares.Logger) // <-- 
-	m.GET("/", func(c *mo.Context) error {return nil})
+	m.Use(middlewares.Logger) // <--
+	m.GET("/", func(c *mo.Context) error { return nil })
 	m.Start(":8080")
 }
 ```
 defining our own middleware
 ```go
 // You can pass this function inside m.Use()
-func CustomMiddleware(next mo.HandlerFunc) mo.HandlerFunc{
-	return func(c *mo.Context) error{
+func CustomMiddleware(next mo.HandlerFunc) mo.HandlerFunc {
+	return func(c *mo.Context) error {
 		// do middleware stuff here
 		// ...
 		next(c) // call next with the same context
@@ -99,22 +99,22 @@ Works like the default struct validation from https://github.com/go-playground/v
 ```go
 import "github.com/impl0x/mo/validator"
 
-type User struct{
-	Name string `validate:"required"`
-	Email string `validate:"required,email"`
+type User struct {
+	Name     string `validate:"required"`
+	Email    string `validate:"required,email"`
 	Password string `validate:"required,min=8"`
-	Age int `validate:"min=18,max=120"` 
+	Age      int    `validate:"min=18,max=120"`
 }
 
 func main() {
-	badUser:=User{ // contains invalid invalid information
-		Email: "not_a_valid_email",
+	badUser := User{ // contains invalid invalid information
+		Email:    "not_a_valid_email",
 		Password: "passw",
-		Age: 2,
+		Age:      2,
 	}
-	errs:=validator.Validate(&badUser)
-	if errs!=nil{
-		for _,err:=range errs{
+	errs := validator.Validate(&badUser)
+	if errs != nil {
+		for _, err := range errs {
 			println(err.Error())
 		}
 	}
