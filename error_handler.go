@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/impl0x/mo/modules/logger"
+	"github.com/impl0x/mo/validator"
 )
 
 // Error Handler must handle nil, HttpErrorInterface and error. (internal)
@@ -20,7 +21,7 @@ func DefaultHTTPErrorHandler(exposeError bool) HTTPErrorHandler {
 			return
 		}
 		if c.response.committed {
-			if c.Mo.Config.LogErrors{
+			if c.Mo.Config.LogErrors {
 				logger.Mo("Cannot write error, response already sent!", "err", err.Error())
 			}
 			return
@@ -28,6 +29,12 @@ func DefaultHTTPErrorHandler(exposeError bool) HTTPErrorHandler {
 		switch e := err.(type) {
 		case HttpErrorInterface:
 			c.JSON(e.StatusCode(), e.JsonFormat())
+		case *validator.GroupedValidationError:
+			c.JSON(http.StatusBadRequest, map[string]any{
+				"code":    http.StatusBadRequest,
+				"message": "Validation error",
+				"errors":  e.JsonFormat(),
+			})
 		default:
 			resp := map[string]any{
 				"message": http.StatusText(http.StatusInternalServerError),
