@@ -38,8 +38,8 @@ var urlRx = regexp.MustCompile(`^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::
 // `validate:"required,email"`
 //
 // `validate:"required,min=3,max=10"`
-func Validate(target any) []ValidationError {
-	var errs []ValidationError
+func Validate(target any) GroupedValidationError {
+	gve := NewGroupedValidationError()
 	rv := reflect.ValueOf(target)     // stores the value
 	rt := reflect.TypeOf(target)      // stores the type
 	if rv.Kind() == reflect.Pointer { // if v is a pointer then we dereference it
@@ -47,10 +47,10 @@ func Validate(target any) []ValidationError {
 		rt = rt.Elem()
 	}
 	if rt.Kind() != reflect.Struct {
-		errs = append(errs, newUserError("Not a struct"))
-		return errs // if not struct we immediately return an error
+		gve.Errors = append(gve.Errors, newUserError("Not a struct"))
+		return gve // if not struct we immediately return an error
 	}
-	for i := 0; i < rv.NumField(); i++ { // loops over all the fields of the struct
+	for i := range rv.NumField() { // loops over all the fields of the struct
 		v := rv.Field(i) // value
 		t := rt.Field(i) // type
 		kind := v.Kind() // storing the type, will be used a lot below
@@ -58,7 +58,7 @@ func Validate(target any) []ValidationError {
 			v = v.Elem()
 		}
 		if kind == reflect.Struct { // recursively validates any nested structs
-			errs = append(errs, Validate(v.Interface())...)
+			gve.Errors = append(gve.Errors, Validate(v.Interface()).Errors...)
 			continue
 		}
 		if !t.IsExported() {
@@ -73,7 +73,7 @@ func Validate(target any) []ValidationError {
 
 		if ok := slices.Contains(requirements, "required"); ok {
 			if v.IsZero() { // if theres a required tag and 54 field is initialized to its zero value
-				errs = append(errs, newMissingFieldError(t.Name)) // we store a missing field error
+				gve.Errors = append(gve.Errors, newValidateError(fmt.Sprintf("Field %v is required", t.Name), t.Name)) // we store a missing field error
 				continue
 			}
 		} else {
@@ -85,41 +85,35 @@ func Validate(target any) []ValidationError {
 		for _, s := range requirements {
 			err := validateRule(s, v, t, kind)
 			if err != nil {
-				errs = append(errs, err)
+				gve.Errors = append(gve.Errors, err)
 			}
 		}
 	}
-	return errs
-}
-
-func matchRegexRule(rx *regexp.Regexp, v reflect.Value, kind reflect.Kind, fieldName string, errorName string) ValidationError {
-	if kind != reflect.String {
-		return newTypeError(kind.String(), reflect.String.String(), fieldName)
-	}
-	if !rx.MatchString(v.String()) {
-		return newValidateError("Not a valid "+errorName, fieldName)
-	}
-	return nil
+	return gve
 }
 
 func validateRule(s string, v reflect.Value, t reflect.StructField, kind reflect.Kind) ValidationError {
 	switch s {
 	case "email":
-		err := matchRegexRule(emailRx, v, kind, t.Name, "email")
-		if err != nil {
-			return err
+		if kind != reflect.String {
+			return newUserError("Cannot validate \"email\" rule against a " + kind.String())
+		}
+		if emailRx.MatchString(v.String()) {
+			return newValidateError("Not a valid email", t.Name)
 		}
 	case "url":
-		err := matchRegexRule(urlRx, v, kind, t.Name, "url")
-		if err != nil {
-			return err
+		if kind != reflect.String {
+			return newUserError("Cannot validate \"url\" rule against a " + kind.String())
+		}
+		if urlRx.MatchString(v.String()) {
+			return newValidateError("Not a valid URL", t.Name)
 		}
 	case "required":
 		return nil // we took care of it before looping, so we can skip now
 	default:
 		cons := strings.Split(s, "=") // [min,2]
 		if len(cons) != 2 {
-			return newUserError("syntax error for tag")
+			return newUserError("Syntax error for tag")
 		}
 		rule := cons[0] // min
 		cods := cons[1] // 2
@@ -132,14 +126,14 @@ func validateRule(s string, v reflect.Value, t reflect.StructField, kind reflect
 			if kind == reflect.String {
 				val := len(v.String())
 				if val < int(min) {
-					return newValidateError(fmt.Sprintf("length of string must be more than %v", min), t.Name)
+					return newValidateError(fmt.Sprintf("Length of string must be more than %v", min), t.Name)
 				}
 			} else if slices.Contains(NumTypes, kind) {
 				if v.Convert(reflect.TypeFor[float64]()).Float() < min {
-					return newValidateError(fmt.Sprintf("value must be less than %v", min), t.Name)
+					return newValidateError(fmt.Sprintf("Value must be less than %v", min), t.Name)
 				}
 			} else {
-				return newUserError("the field must be either string or a type of number")
+				return newUserError("The field must be either string or a type of number")
 			}
 		case "max":
 			max, err := strconv.ParseFloat(cods, 64)
@@ -149,23 +143,23 @@ func validateRule(s string, v reflect.Value, t reflect.StructField, kind reflect
 			if kind == reflect.String {
 				val := len(v.String())
 				if val > int(max) {
-					return newValidateError(fmt.Sprintf("length of string must be less than %v", max), t.Name)
+					return newValidateError(fmt.Sprintf("Length of string must be less than %v", max), t.Name)
 				}
 			} else if slices.Contains(NumTypes, kind) {
 				if v.Convert(reflect.TypeFor[float64]()).Float() > max {
-					return newValidateError(fmt.Sprintf("value must be more than %v", max), t.Name)
+					return newValidateError(fmt.Sprintf("Value must be more than %v", max), t.Name)
 				}
 			} else {
-				return newUserError("the field must be either string or a type of number")
+				return newUserError("The field must be either string or a type of number")
 			}
 		case "oneof":
 			got := fmt.Sprintf("%v", v.Interface())
 			allowed := strings.Split(cods, " ")
 			if !slices.Contains(allowed, got) {
-				return newValidateError(fmt.Sprintf("value must be either one of %v", strings.Join(allowed, ", ")), t.Name)
+				return newValidateError(fmt.Sprintf("Value must be either one of %v", strings.Join(allowed, ", ")), t.Name)
 			}
 		default:
-			return newUserError("unknown rule") // if no match
+			return newUserError("Unknown rule") // if no match
 		}
 	}
 	return nil
