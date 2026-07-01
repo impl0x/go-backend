@@ -17,7 +17,7 @@ type BasicRouter struct {
 	Routes []*Route
 }
 
-func NewSlowRouter() *BasicRouter {
+func NewBasicRouter() *BasicRouter {
 	return &BasicRouter{}
 }
 

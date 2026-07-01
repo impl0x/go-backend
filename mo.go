@@ -30,7 +30,7 @@ func DefaultConfig() *MoConfig {
 
 func New() *Mo {
 	return &Mo{
-		router:           NewSlowRouter(),
+		router:           NewBasicRouter(),
 		HTTPErrorHandler: DefaultHTTPErrorHandler(false),
 		Headers:          DefaultHeadersManager(),
 		Config:           DefaultConfig(),
